@@ -1,184 +1,84 @@
-import cv2
-import tkinter as tk
-import tkinter.filedialog as fd
-import src.helper.gui as hg
+import typing
+from PyQt5.QtCore import *
+from PyQt5.QtWidgets import *
+from ...component.ChooseImage import ChooseImage
+from ...component.ChooseAssembler import ChooseAssembler
+from ...component.ChooseEncodeMethod import ChooseEncodeMethod
+from ...component.ChooseSteganoMethod import ChooseSteganoMethod
+from ...component.ChooseFolderDestination import ChooseFolderDestination
+from ....image.insertor import Insertor
+import os
+from ....helper.Navigation import Navigation
+from ...component.ErrorMessageBox import ErrorMessageBox
+from ...component.LongTask import LongTask
 
-from src.image.insertor import Inserter
-from src.image.psnr import image_PSNR
-from src.image.psnr import image_MSE
-from src.helper.file import File
+#TODO: Add Progress Bar
 
+class InsertForm(QWidget):
+    def __init__(self, parent: typing.Optional['QWidget'] = None, nav: Navigation = None) -> None:
+        super(InsertForm, self).__init__(parent)
+        self.navigation = nav
+        self.main_layout = QVBoxLayout()
+        self.choose_secret_image = ChooseImage(self, "Secret Image", "*.bmp *.png *.jpg", mandatory=True)
+        self.main_layout.addWidget(self.choose_secret_image)
+        self.choose_vessel_image = ChooseImage(self, "Vessel Image", mandatory=True)
+        self.main_layout.addWidget(self.choose_vessel_image)
+        self.choose_assembler = ChooseAssembler(self)
+        self.main_layout.addWidget(self.choose_assembler)
+        self.choose_encoder = ChooseEncodeMethod(self)
+        self.main_layout.addWidget(self.choose_encoder, 2)
+        self.choose_stegano_method = ChooseSteganoMethod(self)
+        self.main_layout.addWidget(self.choose_stegano_method)
+        self.choose_folder_destination = ChooseFolderDestination(self, mandatory=True)
+        self.main_layout.addWidget(self.choose_folder_destination)
+        self.buttons = self.create_buttons()
+        self.main_layout.addLayout(self.buttons)
+        self.setLayout(self.main_layout)
+        self.main_thread = LongTask("Inserting Message...", self)      
+        self.main_thread.signals.finished.connect(os.startfile)
 
-class ImageInsertionForm(tk.Frame):
-    def __init__(self, parent, controller):
-        tk.Frame.__init__(self, parent)
+    def create_buttons(self) -> QBoxLayout:
+        button_layout = QHBoxLayout()
+        button_layout.addStretch()
+        execute_button = QPushButton("Execute")
+        execute_button.clicked.connect(self.execute)
+        button_layout.addWidget(execute_button, alignment=Qt.AlignmentFlag.AlignCenter)
+        back_button = QPushButton("Back")
+        back_button.clicked.connect(self.back)
+        button_layout.addWidget(back_button, alignment=Qt.AlignmentFlag.AlignCenter)
+        button_layout.addStretch()
+        return button_layout
 
-        self.controller = controller
-        self.initialize()
+    def back(self) -> None:
+        if self.navigation:
+            self.navigation.back()
 
-        hg.insert_header(self, 'Insert Image')
-
-        self.render_file_frame()
-        self.render_message_frame()
-        self.render_method_frame()
-        self.render_alpha_frame()
-        self.render_key_frame()
-        self.render_options_frame()
-        self.render_output_frame()
-        self.render_execute_frame()
-
-    def initialize(self):
-        self.TITLE_ROW = 0
-        self.FILE_ROW = 1
-        self.MESSAGE_ROW = 2
-        self.METHOD_ROW = 3
-        self.ALPHA_ROW = 4
-        self.KEY_ROW = 5
-        self.OPTIONS_ROW = 6
-        self.OUTPUT_ROW = 7
-        self.EXECUTE_ROW = 8
-
-        self.DEFAULT_OUT_FILENAME = 'insert_result'
-        self.DEFAULT_ALPHA = '0.3'
-
-        self.encrypt = tk.IntVar()
-        self.encrypt.set(0)
-        self.random = tk.IntVar()
-        self.random.set(0)
-
-        self.output_ext = tk.StringVar()
-        self.output_ext.set('bmp')
-
-        self.method = tk.StringVar()
-
-        self.image_dir = tk.StringVar()
-        self.image_dir.set('')
-
-        self.message_dir = tk.StringVar()
-        self.message_dir.set('')
-
-        self.output_filename = tk.StringVar()
-        self.output_filename.set(self.DEFAULT_OUT_FILENAME)
-
-    def render_file_frame(self):
-        file_frame = hg.create_frame(self, self.FILE_ROW + 1)
-
-        hg.create_label(file_frame, 'Image', 0, 0)
-        hg.create_label(file_frame, self.image_dir, 0, 1, fix_text=False)
-        hg.create_button(file_frame, 'Choose',
-                         lambda: self.load_image_file(), 1, 0)
-
-        hg.create_button(file_frame, 'Preview Image',
-                         lambda: hg.show_image_preview(self.image_dir.get()), 1, 1)
-
-    def render_method_frame(self):
-        method_frame = hg.create_frame(self, self.METHOD_ROW + 1)
-
-        hg.create_label(method_frame, 'Steganography method:', 0, 0)
-        hg.create_radio_button(
-            method_frame, 'bpcs', self.method, 1, 0)
-
-    def render_alpha_frame(self):
-        alpha_frame = hg.create_frame(self, self.ALPHA_ROW + 1)
-
-        hg.create_label(alpha_frame, 'Alpha (for BPCS only):', 2, 0)
-        self.alpha = hg.create_entry(
-            alpha_frame, self.DEFAULT_ALPHA, 3, 0)
-
-    def render_message_frame(self):
-        msg_frame = hg.create_frame(self, self.MESSAGE_ROW + 1)
-
-        hg.create_label(msg_frame, 'Secret Message', 0, 0)
-        hg.create_label(msg_frame, self.message_dir, 0, 1, fix_text=False)
-        hg.create_button(msg_frame, 'Choose',
-                         lambda: self.load_secret_message(), 1, 0)
-
-    def render_key_frame(self):
-        key_frame = hg.create_frame(self, self.KEY_ROW + 1)
-
-        hg.create_label(key_frame, 'Stegano Key:', 0, 0)
-        self.key_entry = hg.create_entry(key_frame, "", 1, 0)
-
-    def render_options_frame(self):
-        option_frame = hg.create_frame(self, self.OPTIONS_ROW + 1)
-
-        hg.create_label(option_frame, 'Option:', 0, 0)
-        hg.create_check_button(
-            option_frame, 'Encrypt Message', self.encrypt, 1, 0)
-
-    def render_output_frame(self):
-        output_frame = hg.create_frame(self, self.OUTPUT_ROW + 1)
-
-        hg.create_label(output_frame, 'Output file\'s name:', 0, 0)
-        hg.create_radio_button(
-            output_frame, 'bmp', self.output_ext, 1, 1)
-        hg.create_radio_button(
-            output_frame, 'png', self.output_ext, 1, 2)
-        self.output_name = hg.create_entry(
-            output_frame, self.DEFAULT_OUT_FILENAME, 1, 0)
-
-    def render_execute_frame(self):
-        execute_frame = hg.create_frame(self, self.EXECUTE_ROW + 1)
-
-        hg.create_button(execute_frame, 'Execute',
-                         lambda: self.execute(), 0, 0)
-
-        hg.create_button(execute_frame, 'Back',
-                         lambda: self.controller.show_frame("StartPage"), 0, 1)
-
-    def load_image_file(self):
-        dialog = fd.askopenfilename(
-            filetypes=(("Image File", ('.bmp', '.png')),)
-        )
-        self.image_dir.set(dialog)
-
-    def load_secret_message(self):
-        self.message_dir.set(fd.askopenfilename())
-
-    def execute(self):
-        print('Insertion Started!')
-        print('> Image dir:', self.image_dir.get())
-        print('> Method:', self.method.get())
-        print('> Alpha (for BPCS only):', self.alpha.get())
-        print('> Message dir:', self.message_dir.get())
-        print('> Key:', self.key_entry.get())
-        print('> Random:', self.random.get())
-        print('> Encrypt:', self.output_name.get())
-        print('> Output ext:', self.output_ext.get())
-
-        file_dir = self.image_dir.get()
-        method = self.method.get()
-        alpha = float(self.alpha.get())
-        message_dir = self.message_dir.get()
-        key = self.key_entry.get()
-        output_filename = self.output_name.get()
-        output_fileext = self.output_ext.get()
-
-        if file_dir == '' or message_dir == '' or key == '' or output_filename == '':
+    def execute(self) -> None:
+        try:
+            self.get_inputs()
+        except ValueError as err:
+            ErrorMessageBox(str(err), self).show()
             return
+        self.insertor = self.construct_insertor()
+        self.main_thread.set_worker(self.insertor)
+        self.main_thread.start()
 
-        insert = Inserter(file_dir, message_dir, key)
+    def get_inputs(self) -> None:
+        self.secret_image = self.choose_secret_image.get_image()
+        self.vessel_image = self.choose_vessel_image.get_image()
+        self.assembler = self.choose_assembler.get_assembler()
+        self.encoders = self.choose_encoder.get_encoder()
+        self.stegano_method = self.choose_stegano_method.get_stegano_method()
+        self.folder_destination = self.choose_folder_destination.get_folder()
 
-        image_modified = insert.insert_message(
-            encrypted=self.encrypt.get(),
-            method=method,
-            alpha=alpha
-        )
-
-        file_name = "output/" + output_filename + "." + output_fileext
-        output_file = File(file_name)
-        output_file.write_image_file(image_modified)
-
-        print('Insertion Finished!')
-
-        image = cv2.imread(file_dir)
-        cv2.imshow('Original Image', image)
-        cv2.imshow('Steganography Image', image_modified)
-        cv2.waitKey(0)
-        cv2.destroyAllWindows()
-
-        title = "Finish Insert Secret Message to Image"
-
-        mse = image_MSE(image, image_modified)
-        psnr = image_PSNR(mse)
-        self.controller.show_end_frame(title, "Image", file_name, psnr, mse)
+    def construct_insertor(self) -> Insertor:
+        #TODO: maybe create insertor factory?
+        insertor = Insertor()
+        insertor.set_stegano_method(self.stegano_method)
+        insertor.set_assembler(self.assembler)
+        for encoder in self.encoders:
+            insertor.add_encoder(encoder)
+        insertor.set_secret_file(self.secret_image)
+        insertor.set_vessel_file(self.vessel_image)
+        insertor.set_folder(self.folder_destination)
+        return insertor

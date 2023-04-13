@@ -12,7 +12,7 @@ import time
 class Extractor(Runnable):
     def __init__(self, vessel_file: str, assembler: Assembler, 
                  stegano_method: SteganoMethod, dir: str, encoders: list[Encoder] = []) -> None:
-        super().__init__()
+        super().__init__(WorkerSignal())
         self.vessel_image = cv.imread(vessel_file)
         self.assembler = assembler
         self.assembler.set_filename(f'{int(time.time())}_extract')

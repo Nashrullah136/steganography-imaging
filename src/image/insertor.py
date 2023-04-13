@@ -13,7 +13,7 @@ import os
 class Insertor(Runnable):
     def __init__(self, vessel_file: str, secret_file: str, assembler: Assembler, 
                  stegano_method: SteganoMethod, dir: str, encoders: list[Encoder] = []) -> None:
-        super().__init__()
+        super().__init__(WorkerSignal())
         self.vessel_image = cv.imread(vessel_file)
         self.secret_file = secret_file
         self.assembler = assembler

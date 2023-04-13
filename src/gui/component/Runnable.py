@@ -5,8 +5,9 @@ import typing
 from .WorkerSignal import WorkerSignal
 
 class Runnable(QRunnable):
-    def __init__(self):
+    def __init__(self, signals: WorkerSignal):
         super().__init__()
+        self.signals = signals
     def number_of_progress(self) -> int:
         pass
     def stop(self) -> None:

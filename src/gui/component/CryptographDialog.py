@@ -5,7 +5,6 @@ from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from src.encoder.cryptography.CryptographyList import CryptographList
-from src.encoder.cryptography.Cryptography import Cryptograph
 from src.encoder.Encoder import Encoder
 from .dialog_cryptograph import Ui_Cryptograph
 
@@ -23,12 +22,12 @@ class CryptographDialog(QDialog):
 
     def get_result(self) -> typing.Tuple[str, Encoder]:
         if self.exec_():
-            encoder : Cryptograph = self.ui.cryptogprah_combobox.currentData()
+            cryptograph_type = self.ui.cryptogprah_combobox.currentData()
             text = self.ui.cryptogprah_combobox.currentText()
             key = self.ui.key.text()
             if not key:
                 raise ValueError("Cryptograph key is mandatory")
-            encoder.set_key(key)
-            return text, key, encoder
+            cryptograph = cryptograph_type(key)
+            return text, key, cryptograph
         else:
             return None, None, None

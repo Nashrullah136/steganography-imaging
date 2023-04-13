@@ -3,15 +3,19 @@ from ..Encoder import Encoder
 from ...helper.BinaryDigitArray import BinaryDigitArray
 from Cryptodome.Util.Padding import pad, unpad
 from Cryptodome.Random import get_random_bytes
-from .Cryptography import Cryptograph
 
-class AESEncoder(Encoder, Cryptograph):
-    def __init__(self, key: str = '') -> None:
+class AESEncoder(Encoder):
+    def __init__(self, key: str) -> None:
         super().__init__()
         self.key = key.encode()
-
-    def set_key(self, key: str) -> None:
-        self.key = key.encode()
+        if len(self.key) <= 16:
+            self.key = pad(self.key, 16)
+        elif len(self.key) <= 24:
+            self.key = pad(self.key, 24)
+        elif len(self.key) <= 32:
+            self.key = pad(self.key, 32)
+        else:
+            self.key = self.key[:32]
 
     def encode(self, msg: BinaryDigitArray) -> BinaryDigitArray:
         iv = get_random_bytes(AES.block_size)

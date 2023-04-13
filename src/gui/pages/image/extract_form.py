@@ -56,7 +56,8 @@ class ExtractForm(QWidget):
         except ValueError as err:
             ErrorMessageBox(str(err), self).show()
             return
-        self.extractor = self.create_extractor()
+        self.extractor = Extractor(self.vessel_image, self.assembler, self.stegano_method,
+                                   self.folder_destination, self.decoders)
         self.main_thread.set_worker(self.extractor)
         self.main_thread.start()
 
@@ -66,14 +67,3 @@ class ExtractForm(QWidget):
         self.decoders = self.choose_decoder.get_encoder()
         self.stegano_method = self.choose_stegano_method.get_stegano_method()
         self.folder_destination = self.choose_folder_destination.get_folder()
-
-    def create_extractor(self) -> Extractor:
-        #TODO: maybe create extractor factory?
-        extractor = Extractor()
-        extractor.set_vessel_file(self.vessel_image)
-        extractor.set_assembler(self.assembler)
-        for decoder in self.decoders:
-            extractor.add_encoder(decoder)
-        extractor.set_stegano_method(self.stegano_method)
-        extractor.set_folder(self.folder_destination)
-        return extractor

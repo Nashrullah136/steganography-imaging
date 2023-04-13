@@ -59,7 +59,8 @@ class InsertForm(QWidget):
         except ValueError as err:
             ErrorMessageBox(str(err), self).show()
             return
-        self.insertor = self.construct_insertor()
+        self.insertor = Insertor(self.vessel_image, self.secret_image, self.assembler,
+                                 self.stegano_method, self.folder_destination, self.encoders)
         self.main_thread.set_worker(self.insertor)
         self.main_thread.start()
 
@@ -70,15 +71,3 @@ class InsertForm(QWidget):
         self.encoders = self.choose_encoder.get_encoder()
         self.stegano_method = self.choose_stegano_method.get_stegano_method()
         self.folder_destination = self.choose_folder_destination.get_folder()
-
-    def construct_insertor(self) -> Insertor:
-        #TODO: maybe create insertor factory?
-        insertor = Insertor()
-        insertor.set_stegano_method(self.stegano_method)
-        insertor.set_assembler(self.assembler)
-        for encoder in self.encoders:
-            insertor.add_encoder(encoder)
-        insertor.set_secret_file(self.secret_image)
-        insertor.set_vessel_file(self.vessel_image)
-        insertor.set_folder(self.folder_destination)
-        return insertor

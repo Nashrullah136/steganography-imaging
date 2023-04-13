@@ -8,7 +8,7 @@ class SteganoMethodList():
         [
             {
                 'name': 'LSB',
-                'stegano_method': LSB(),
+                'stegano_method': LSB,
                 'label': 'Bit',
                 'bottom': 1,
                 'top': 8,
@@ -16,7 +16,7 @@ class SteganoMethodList():
             },
             {
                 'name': 'BPCS',
-                'stegano_method': BPCS(),
+                'stegano_method': BPCS,
                 'label': 'Bit',
                 'bottom': 0,
                 'top': 1,

@@ -66,7 +66,7 @@ class ChooseSteganoMethod(QWidget):
         self.all_parameter_ui.setCurrentIndex(index)
 
     def get_stegano_method(self) -> SteganoMethod:
-        stegano_method : SteganoMethod = self.combo_box.currentData()
+        stegano_method_type = self.combo_box.currentData()
         parameter_widget : QDoubleSpinBox = self.all_parameter_ui.currentWidget().findChild(QDoubleSpinBox)
-        stegano_method.set_parameter(parameter_widget.value())
+        stegano_method = stegano_method_type(parameter_widget.value())
         return stegano_method

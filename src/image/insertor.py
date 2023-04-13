@@ -14,12 +14,11 @@ class Insertor(Runnable):
     def __init__(self, vessel_file: str, secret_file: str, assembler: Assembler, 
                  stegano_method: SteganoMethod, dir: str, encoders: list[Encoder] = []) -> None:
         super().__init__()
-        vessel_image = cv.imread(vessel_file)
+        self.vessel_image = cv.imread(vessel_file)
         self.secret_file = secret_file
         self.assembler = assembler
         self.encoders: list[Encoder] = encoders
         self.stegano_method = stegano_method
-        self.stegano_method.set_vessel_pixel(vessel_image)
         self.dir = dir
 
     def add_encoder(self, encoder: Encoder) -> None:
@@ -41,7 +40,7 @@ class Insertor(Runnable):
         operations = [self.assembler.disassemble]
         for encoder in self.encoders:
             operations.append(encoder.encode)
-        operations.append(self.stegano_method.hide)
+        operations.append(lambda secret_msg : self.stegano_method.hide(self.vessel_image, secret_msg))
         operations.append(self.save_image)
         return operations
 

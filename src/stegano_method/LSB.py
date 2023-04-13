@@ -1,8 +1,8 @@
 from src.stegano_method.SteganoMethod import SteganoMethod
 import numpy as np
 from src.helper.BinaryDigitArray import BinaryDigitArray
-from io import BytesIO
 
+#TODO: improve performance
 class LSB(SteganoMethod):
     _metadata_length = 64
 
@@ -10,14 +10,7 @@ class LSB(SteganoMethod):
         super().__init__()
         self.bit_size = bit_size
 
-    def set_parameter(self, parameter) -> None:
-        self.bit_size = int(parameter)
-
-    def set_vessel_pixel(self, vessel_pixel: np.ndarray) -> None:
-        return super().set_vessel_pixel(vessel_pixel)
-
-    def hide(self, secret_data: BinaryDigitArray) -> np.ndarray:
-        vessel_pixel = self.vessel_pixel
+    def hide(self, vessel_pixel: np.ndarray, secret_data: BinaryDigitArray) -> np.ndarray:
         real_shape = vessel_pixel.shape
         vessel_pixel_flatten = vessel_pixel.flatten()
         secret_data.insert_front(
@@ -32,7 +25,6 @@ class LSB(SteganoMethod):
         return vessel_pixel
 
     def reveal(self, vessel_pixel: np.ndarray) -> BinaryDigitArray:
-        #TODO: improve performance
         vessel_pixel.astype('uint64')
         vessel_pixel_flatten = vessel_pixel.flatten()
         bit_mask = 2**self.bit_size - 1

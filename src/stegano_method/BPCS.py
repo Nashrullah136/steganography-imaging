@@ -11,12 +11,6 @@ class BPCS(SteganoMethod):
     def __init__(self, alpha: float = 0.3) -> None:
         super().__init__()
         self.alpha = alpha
-
-    def set_parameter(self, parameter) -> None:
-        self.alpha = parameter
-
-    def set_vessel_pixel(self, vessel_pixel: np.ndarray) -> None:
-        return super().set_vessel_pixel(vessel_pixel)
         
     def pbc_to_cgc(self, pixel: np.ndarray) -> np.ndarray:
         temp = pixel.copy()
@@ -114,8 +108,7 @@ class BPCS(SteganoMethod):
         msg = msg << bit
         return removed_bit + msg
 
-    def hide(self, secret_data: BinaryDigitArray) -> np.ndarray:
-        vessel_pixel = self.vessel_pixel
+    def hide(self, vessel_pixel: np.ndarray, secret_data: BinaryDigitArray) -> np.ndarray:
         secret_data.insert_front(BinaryDigitArray.from_int(secret_data.len(), 63))
         processed_secret_data = self._process_secret_data(secret_data)
         vessel_cgc = self.pbc_to_cgc(vessel_pixel)

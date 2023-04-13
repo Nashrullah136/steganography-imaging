@@ -22,8 +22,9 @@ class CompressionDialog(QDialog):
 
     def get_result(self) -> typing.Tuple[str, Encoder]:
         if self.exec_():
-            encoder : Encoder = self.ui.compression_combobox.currentData()
+            compression_type = self.ui.compression_combobox.currentData()
             text = self.ui.compression_combobox.currentText()
-            return text, encoder
+            compression = compression_type()
+            return text, compression
         else:
             return None, None

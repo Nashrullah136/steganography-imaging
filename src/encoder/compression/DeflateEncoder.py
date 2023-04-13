@@ -9,7 +9,6 @@ class DeflateEncoder(Encoder):
         result += compress_obj.flush()
         return BinaryDigitArray.from_bytes(result)
 
-
     def decode(self, msg: BinaryDigitArray) -> BinaryDigitArray:
         decompress_obj = zlib.decompressobj()
         result = decompress_obj.decompress(msg.read_all_bytes())

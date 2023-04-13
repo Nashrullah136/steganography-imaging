@@ -1,3 +1,7 @@
+#img result test
+*.bmp
+*.png
+
 #output
 output/
 

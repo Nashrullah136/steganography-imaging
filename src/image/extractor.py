@@ -15,10 +15,10 @@ class Extractor(Runnable):
         super().__init__(WorkerSignal())
         self.vessel_image = cv.imread(vessel_file)
         self.assembler = assembler
-        self.assembler.set_filename(f'{int(time.time())}_extract')
-        self.assembler.set_folder(dir)
         self.encoders: list[Encoder] = encoders
         self.stegano_method = stegano_method
+        self.dir = dir
+        self.filename = f'{int(time.time())}_insert'
 
     def add_encoder(self, encoder: Encoder) -> None:
         self.encoders.append(encoder)
@@ -27,7 +27,7 @@ class Extractor(Runnable):
         self.signals = signals
         
     def create_operations(self) -> list[typing.Callable[[BinaryDigitArray], BinaryDigitArray]]:
-        operations = [self.assembler.assemble]
+        operations = [lambda secret_msg : self.assembler.assemble(secret_msg, self.dir, self.filename)]
         for encoder in self.encoders:
             operations.append(encoder.decode)
         operations.append(self.stegano_method.reveal)

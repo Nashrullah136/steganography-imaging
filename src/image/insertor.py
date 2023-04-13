@@ -20,6 +20,7 @@ class Insertor(Runnable):
         self.encoders: list[Encoder] = encoders
         self.stegano_method = stegano_method
         self.dir = dir
+        self.filename = f'{int(time.time())}_insert.bmp'
 
     def add_encoder(self, encoder: Encoder) -> None:
         self.encoders.append(encoder)
@@ -31,8 +32,7 @@ class Insertor(Runnable):
         self.signals = signals
 
     def save_image(self, vessel_pixel: np.ndarray) -> str:
-        default_name = f'{int(time.time())}_insert.bmp'
-        result_path = os.path.join(self.dir, default_name)
+        result_path = os.path.join(self.dir, self.filename)
         cv.imwrite(result_path, vessel_pixel)
         return result_path
         

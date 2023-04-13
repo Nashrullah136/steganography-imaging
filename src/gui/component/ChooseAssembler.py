@@ -27,4 +27,5 @@ class ChooseAssembler(QWidget):
     def get_assembler(self) -> str:
         if self.mandatory and self.combo_box.currentData():
             raise ValueError("File opening is mandatory!")
-        return self.combo_box.currentData()
+        assembler_type = self.combo_box.currentData()
+        return assembler_type()

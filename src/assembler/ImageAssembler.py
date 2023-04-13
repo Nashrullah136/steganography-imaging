@@ -8,12 +8,6 @@ class ImageAssembler(Assembler):
     def __init__(self) -> None:
         super().__init__()
 
-    def set_folder(self, folder: str) -> None:
-        self.folder = folder
-
-    def set_filename(self, filename: str) -> None:
-        self.filename = filename
-
     def disassemble(self, filepath: str) -> BinaryDigitArray:
         image_pixel = cv.imread(filepath)
         ext = path.splitext(filepath)[1].removeprefix(".")
@@ -26,7 +20,7 @@ class ImageAssembler(Assembler):
         result.insert(BinaryDigitArray.from_ndarray(image_pixel))
         return result
 
-    def assemble(self, msg: BinaryDigitArray) -> str:
+    def assemble(self, msg: BinaryDigitArray, dir: str, filename: str) -> str:
         ext = msg.read_bytes(4).decode().strip()
         len_shape = msg.read_int(8)
         shape = []
@@ -35,6 +29,6 @@ class ImageAssembler(Assembler):
         pixel = msg.read_all_bytes()
         pixel = np.asarray(list(pixel))
         pixel = pixel.reshape(shape)
-        full_path = path.join(self.folder, self.filename + '.' + ext)
+        full_path = path.join(dir, filename + '.' + ext)
         cv.imwrite(full_path, pixel)
         return full_path

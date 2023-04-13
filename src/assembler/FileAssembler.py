@@ -8,12 +8,6 @@ class FileAssembler(Assembler):
 
     def _get_file_extension(self, filepath: str) -> str:
         return path.splitext(filepath)[1]
-    
-    def set_folder(self, folder: str) -> None:
-        self.folder = folder
-
-    def set_filename(self, filename: str) -> None:
-        self.filename = filename
 
     def disassemble(self, filepath: str) -> BinaryDigitArray:
         ext = self._get_file_extension(filepath).removeprefix(".")
@@ -26,9 +20,9 @@ class FileAssembler(Assembler):
         file.close()
         return result
 
-    def assemble(self, msg: BinaryDigitArray) -> str:
+    def assemble(self, msg: BinaryDigitArray, dir: str, filename: str) -> str:
         ext = msg.read_bytes(4).decode().strip()
-        file_destiny = path.join(self.folder, f'{self.filename}.{ext}')
+        file_destiny = path.join(dir, f'{filename}.{ext}')
         with open(file_destiny, "wb") as file:
             file.write(msg.read_all_bytes())
         return file_destiny

@@ -1,6 +1,11 @@
-ffmpeg==1.4
-ffmpeg-python==0.2.0
+autopep8==2.0.1
+future==0.18.3
 numpy==1.23.4
 opencv-python==4.6.0.66
-Pillow==9.2.0
+pycodestyle==2.10.0
 pycryptodomex==3.15.0
+PyQt5==5.15.9
+PyQt5-Qt5==5.15.2
+PyQt5-sip==12.11.1
+pyuic5-tool==0.0.1
+tomli==2.0.1
